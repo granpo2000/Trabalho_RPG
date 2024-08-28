@@ -1,28 +1,28 @@
 package models
 
-enum class ClassType {
-    BARBARIAN, BARD, CLERIC, DRUID, FIGHTER, MONK, PALADIN, RANGER, ROGUE, SORCERER, WARLOCK, WIZARD
+enum class TipoClasse {
+    BARBARO, BARDO, CLERIGO, DRUIDA, GUERREIRO, MONGE, PALADINO, PATRULHEIRO, LADINO, FEITICEIRO, BRUXO, MAGO
 }
 
-data class CharacterClass(
-    val name: ClassType,
-    val classAttributes: Map<String, Int>
+data class ClassePersonagem(
+    val nome: TipoClasse,
+    val atributosClasse: Map<String, Int>
 ) {
     companion object {
-        fun getCharacterClass(name: ClassType): CharacterClass {
-            return when (name) {
-                ClassType.BARBARIAN -> CharacterClass(name, mapOf("Strength" to 2))
-                ClassType.BARD -> CharacterClass(name, mapOf("Charisma" to 2))
-                ClassType.CLERIC -> CharacterClass(name, mapOf("Wisdom" to 2))
-                ClassType.DRUID -> CharacterClass(name, mapOf("Wisdom" to 2))
-                ClassType.FIGHTER -> CharacterClass(name, mapOf("Strength" to 1, "Dexterity" to 1))
-                ClassType.MONK -> CharacterClass(name, mapOf("Dexterity" to 2))
-                ClassType.PALADIN -> CharacterClass(name, mapOf("Strength" to 2))
-                ClassType.RANGER -> CharacterClass(name, mapOf("Dexterity" to 2))
-                ClassType.ROGUE -> CharacterClass(name, mapOf("Dexterity" to 2))
-                ClassType.SORCERER -> CharacterClass(name, mapOf("Charisma" to 2))
-                ClassType.WARLOCK -> CharacterClass(name, mapOf("Charisma" to 2))
-                ClassType.WIZARD -> CharacterClass(name, mapOf("Intelligence" to 2))
+        fun obterClassePersonagem(nome: TipoClasse): ClassePersonagem {
+            return when (nome) {
+                TipoClasse.BARBARO -> ClassePersonagem(nome, mapOf("Força" to 2))
+                TipoClasse.BARDO -> ClassePersonagem(nome, mapOf("Carisma" to 2))
+                TipoClasse.CLERIGO -> ClassePersonagem(nome, mapOf("Sabedoria" to 2))
+                TipoClasse.DRUIDA -> ClassePersonagem(nome, mapOf("Sabedoria" to 2))
+                TipoClasse.GUERREIRO -> ClassePersonagem(nome, mapOf("Força" to 1, "Destreza" to 1))
+                TipoClasse.MONGE -> ClassePersonagem(nome, mapOf("Destreza" to 2))
+                TipoClasse.PALADINO -> ClassePersonagem(nome, mapOf("Força" to 2))
+                TipoClasse.PATRULHEIRO -> ClassePersonagem(nome, mapOf("Destreza" to 2))
+                TipoClasse.LADINO -> ClassePersonagem(nome, mapOf("Destreza" to 2))
+                TipoClasse.FEITICEIRO -> ClassePersonagem(nome, mapOf("Carisma" to 2))
+                TipoClasse.BRUXO -> ClassePersonagem(nome, mapOf("Carisma" to 2))
+                TipoClasse.MAGO -> ClassePersonagem(nome, mapOf("Inteligência" to 2))
             }
         }
     }

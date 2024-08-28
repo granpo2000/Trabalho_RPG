@@ -1,71 +1,99 @@
 import models.*
 import utils.InputUtils
 
+fun limparTela() {
+    try {
+        if (System.getProperty("os.name").contains("Windows")) {
+            Runtime.getRuntime().exec("cls")
+        } else {
+            Runtime.getRuntime().exec("clear")
+        }
+    } catch (e: Exception) {
+        for (i in 0..50) {
+            println()
+        }
+    }
+}
+
 fun main() {
-    println("Welcome to the RPG Character Creator!")
+    println("Bem-vindo ao Criador de Personagens de RPG!")
 
-    val name = InputUtils.promptUser("Enter the name of your character")
+    val nome = InputUtils.promptUser("Digite o nome do seu personagem")
+    limparTela()
 
-    val raceOptions = RaceType.values().joinToString { it.name }
-    val raceChoice = InputUtils.promptUser("Choose a race from the following options: $raceOptions").uppercase()
-    val race = Race.getRace(RaceType.valueOf(raceChoice))
+    // Obtendo a raça
+    val opcoesRaca = TipoRaca.values().joinToString { it.name }
+    val escolhaRaca = InputUtils.promptUser("Escolha uma raça entre as seguintes opções: $opcoesRaca").uppercase()
+    limparTela()
+    val raca = Raca.obterRaca(TipoRaca.valueOf(escolhaRaca))
 
-    val subRace: SubRace? = when (race.name) {
-        RaceType.DWARF -> {
-            val subRaceOptions = listOf(SubRaceType.HILL_DWARF.name, SubRaceType.MOUNTAIN_DWARF.name).joinToString()
-            val subRaceChoice = InputUtils.promptUser("Choose a sub-race from the following options: $subRaceOptions").uppercase()
-            SubRace.getSubRace(SubRaceType.valueOf(subRaceChoice))
+    // Obtendo a sub-raça, se aplicável
+    val subRaca: SubRaca? = if (raca.nome in listOf(TipoRaca.ANAO, TipoRaca.ELFO, TipoRaca.HALFLING, TipoRaca.GNOMO)) {
+        val opcoesSubRaca = when (raca.nome) {
+            TipoRaca.ANAO -> listOf("ANÃO_DAS_COLINAS", "ANÃO_DAS_MONTANHAS")
+            TipoRaca.ELFO -> listOf("ELFO_ALTO", "ELFO_DOS_FORES", "ELFO_DAS_OMBRA")
+            TipoRaca.HALFLING -> listOf("HALFLING_DE_PÉS_LEVES", "HALFLING_FORTIFICADO")
+            TipoRaca.GNOMO -> listOf("GNOME_DA_FLORA", "GNOME_ROCK")
+            else -> emptyList()
+        }.joinToString() + ", ou 'NÃO_USAR' para não escolher uma sub-raça"
+
+        val escolhaSubRaca = InputUtils.promptUser("Escolha uma sub-raça entre as seguintes opções: $opcoesSubRaca").uppercase()
+        limparTela()
+        if (escolhaSubRaca == "NÃO_USAR") {
+            null
+        } else {
+            SubRaca.obterSubRaca(TipoSubRaca.valueOf(escolhaSubRaca))
         }
-        RaceType.ELF -> {
-            val subRaceOptions = listOf(SubRaceType.HIGH_ELF.name, SubRaceType.WOOD_ELF.name, SubRaceType.DARK_ELF.name).joinToString()
-            val subRaceChoice = InputUtils.promptUser("Choose a sub-race from the following options: $subRaceOptions").uppercase()
-            SubRace.getSubRace(SubRaceType.valueOf(subRaceChoice))
-        }
-        RaceType.HALFLING -> {
-            val subRaceOptions = listOf(SubRaceType.LIGHTFOOT_HALFLING.name, SubRaceType.STOUT_HALFLING.name).joinToString()
-            val subRaceChoice = InputUtils.promptUser("Choose a sub-race from the following options: $subRaceOptions").uppercase()
-            SubRace.getSubRace(SubRaceType.valueOf(subRaceChoice))
-        }
-        RaceType.GNOME -> {
-            val subRaceOptions = listOf(SubRaceType.FOREST_GNOME.name, SubRaceType.ROCK_GNOME.name).joinToString()
-            val subRaceChoice = InputUtils.promptUser("Choose a sub-race from the following options: $subRaceOptions").uppercase()
-            SubRace.getSubRace(SubRaceType.valueOf(subRaceChoice))
-        }
-        else -> null
+    } else {
+        null
     }
 
-    val classOptions = ClassType.values().joinToString { it.name }
-    val classChoice = InputUtils.promptUser("Choose a class from the following options: $classOptions").uppercase()
-    val characterClass = CharacterClass.getCharacterClass(ClassType.valueOf(classChoice))
+    // Obtendo a classe
+    val opcoesClasse = TipoClasse.values().joinToString { it.name }
+    val escolhaClasse = InputUtils.promptUser("Escolha uma classe entre as seguintes opções: $opcoesClasse").uppercase()
+    limparTela()
+    val classePersonagem = ClassePersonagem.obterClassePersonagem(TipoClasse.valueOf(escolhaClasse))
 
-    val character = Character(name, race, subRace, characterClass)
-    character.applyBonuses()
+    // Criando o personagem e aplicando bônus
+    val personagem = Personagem(nome, raca, subRaca, classePersonagem)
+    personagem.aplicarBonus()
 
-    println("You have 6 points to distribute among your attributes.")
-    var pointsLeft = 6
-    while (pointsLeft > 0) {
-        println("Current attributes: ${character.attributes}")
-        val attributeChoice = InputUtils.promptUser("Which attribute would you like to increase? (Strength, Constitution, Dexterity, Wisdom, Intelligence, Charisma)").capitalize()
-        if (character.attributes.containsKey(attributeChoice)) {
-            val pointsToAdd = InputUtils.promptUserForInt("How many points would you like to add? (Points left: $pointsLeft)")
-            if (pointsToAdd in 1..pointsLeft) {
-                character.attributes[attributeChoice] = character.attributes[attributeChoice]!! + pointsToAdd
-                pointsLeft -= pointsToAdd
+    // Distribuindo pontos entre atributos
+    println("Você tem 27 pontos para distribuir entre seus atributos. Cada atributo pode receber no máximo 15 pontos.")
+    var pontosRestantes = 27
+    while (pontosRestantes > 0) {
+        println("Atributos atuais: ${personagem.atributos}")
+        val escolhaAtributo = InputUtils.promptUser("Qual atributo você gostaria de aumentar? (Força, Constituição, Destreza, Sabedoria, Inteligência, Carisma)").capitalize()
+        limparTela()
+        if (personagem.atributos.containsKey(escolhaAtributo)) {
+            val pontosAdicionar = InputUtils.promptUserForInt("Quantos pontos você gostaria de adicionar? (Pontos restantes: $pontosRestantes)").coerceAtMost(pontosRestantes)
+            limparTela()
+            if (pontosAdicionar in 1..pontosRestantes) {
+                val pontosAtuais = personagem.atributos[escolhaAtributo] ?: 0
+                if (pontosAtuais + pontosAdicionar <= 15) {
+                    personagem.atributos[escolhaAtributo] = pontosAtuais + pontosAdicionar
+                    pontosRestantes -= pontosAdicionar
+                } else {
+                    println("Não é possível adicionar mais pontos a este atributo. O máximo é 15 pontos por atributo.")
+                }
             } else {
-                println("Invalid number of points.")
+                println("Número inválido de pontos.")
             }
         } else {
-            println("Invalid attribute choice.")
+            println("Escolha de atributo inválida.")
         }
     }
 
-    val description = InputUtils.promptUser("Enter a description of your character")
+    // Capturando a descrição e exibindo detalhes
+    val descricao = InputUtils.promptUser("Digite uma descrição para o seu personagem")
+    limparTela()
 
-    println("\nCharacter Creation Complete! Here are your character's details:")
-    println("Name: ${character.name}")
-    println("Race: ${character.race.name}")
-    subRace?.let { println("Sub-Race: ${it.name}") }
-    println("Class: ${character.characterClass.name}")
-    println("Attributes: ${character.attributes}")
-    println("Description: $description")
+    println("\nCriação de Personagem Completa! Aqui estão os detalhes do seu personagem:")
+    println("Nome: ${personagem.nome}")
+    println("Raça: ${personagem.raca.nome}")
+    subRaca?.let { println("Sub-Raça: ${it.nome}") }
+    println("Classe: ${personagem.classePersonagem.nome}")
+    println("Atributos: ${personagem.atributos}")
+    println("Descrição: $descricao")
+    println("${personagem.nome} está atualmente no nível 1.")
 }

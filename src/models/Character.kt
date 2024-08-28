@@ -1,24 +1,24 @@
 package models
 
-data class Character(
-    var name: String,
-    var race: Race,
-    var subRace: SubRace?,
-    var characterClass: CharacterClass,
-    var attributes: MutableMap<String, Int> = mutableMapOf(
-        "Strength" to 3,
-        "Constitution" to 3,
-        "Dexterity" to 3,
-        "Wisdom" to 3,
-        "Intelligence" to 3,
-        "Charisma" to 3
+data class Personagem(
+    var nome: String,
+    var raca: Raca,
+    var subRaca: SubRaca?,
+    var classePersonagem: ClassePersonagem,
+    var atributos: MutableMap<String, Int> = mutableMapOf(
+        "Força" to 8,
+        "Constituição" to 8,
+        "Destreza" to 8,
+        "Sabedoria" to 8,
+        "Inteligência" to 8,
+        "Carisma" to 8
     )
 ) {
-    fun applyBonuses() {
-        race.baseAttributes.forEach { (key, value) -> attributes[key] = attributes[key]!! + value }
+    fun aplicarBonus() {
+        raca.atributosBase.forEach { (chave, valor) -> atributos[chave] = atributos[chave]!! + valor }
 
-        subRace?.additionalAttributes?.forEach { (key, value) -> attributes[key] = attributes[key]!! + value }
+        subRaca?.atributosAdicionais?.forEach { (chave, valor) -> atributos[chave] = atributos[chave]!! + valor }
 
-        characterClass.classAttributes.forEach { (key, value) -> attributes[key] = attributes[key]!! + value }
+        classePersonagem.atributosClasse.forEach { (chave, valor) -> atributos[chave] = atributos[chave]!! + valor }
     }
 }
