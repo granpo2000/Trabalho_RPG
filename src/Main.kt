@@ -1,5 +1,6 @@
 import models.*
 import utils.InputUtils
+import strategies.*
 
 fun limparTela() {
     try {
@@ -27,26 +28,8 @@ fun main() {
     limparTela()
     val raca = Raca.obterRaca(TipoRaca.valueOf(escolhaRaca))
 
-    // Obtendo a sub-raça, se aplicável
-    val subRaca: SubRaca? = if (raca.nome in listOf(TipoRaca.ANAO, TipoRaca.ELFO, TipoRaca.HALFLING, TipoRaca.GNOMO)) {
-        val opcoesSubRaca = when (raca.nome) {
-            TipoRaca.ANAO -> listOf("ANÃO_DAS_COLINAS", "ANÃO_DAS_MONTANHAS")
-            TipoRaca.ELFO -> listOf("ELFO_ALTO", "ELFO_DOS_FORES", "ELFO_DAS_OMBRA")
-            TipoRaca.HALFLING -> listOf("HALFLING_DE_PÉS_LEVES", "HALFLING_FORTIFICADO")
-            TipoRaca.GNOMO -> listOf("GNOME_DA_FLORA", "GNOME_ROCK")
-            else -> emptyList()
-        }.joinToString() + ", ou 'NÃO_USAR' para não escolher uma sub-raça"
-
-        val escolhaSubRaca = InputUtils.promptUser("Escolha uma sub-raça entre as seguintes opções: $opcoesSubRaca").uppercase()
-        limparTela()
-        if (escolhaSubRaca == "NÃO_USAR") {
-            null
-        } else {
-            SubRaca.obterSubRaca(TipoSubRaca.valueOf(escolhaSubRaca))
-        }
-    } else {
-        null
-    }
+    // Não consideramos sub-raça neste exemplo
+    val subRaca: SubRaceStrategy? = null
 
     // Obtendo a classe
     val opcoesClasse = TipoClasse.values().joinToString { it.name }
@@ -54,35 +37,22 @@ fun main() {
     limparTela()
     val classePersonagem = ClassePersonagem.obterClassePersonagem(TipoClasse.valueOf(escolhaClasse))
 
-    // Criando o personagem e aplicando bônus
+    // Criando o personagem
     val personagem = Personagem(nome, raca, subRaca, classePersonagem)
-    personagem.aplicarBonus()
 
-    // Distribuindo pontos entre atributos
-    println("Você tem 27 pontos para distribuir entre seus atributos. Cada atributo pode receber no máximo 15 pontos.")
-    var pontosRestantes = 27
-    while (pontosRestantes > 0) {
-        println("Atributos atuais: ${personagem.atributos}")
-        val escolhaAtributo = InputUtils.promptUser("Qual atributo você gostaria de aumentar? (Força, Constituição, Destreza, Sabedoria, Inteligência, Carisma)").capitalize()
-        limparTela()
-        if (personagem.atributos.containsKey(escolhaAtributo)) {
-            val pontosAdicionar = InputUtils.promptUserForInt("Quantos pontos você gostaria de adicionar? (Pontos restantes: $pontosRestantes)").coerceAtMost(pontosRestantes)
-            limparTela()
-            if (pontosAdicionar in 1..pontosRestantes) {
-                val pontosAtuais = personagem.atributos[escolhaAtributo] ?: 0
-                if (pontosAtuais + pontosAdicionar <= 15) {
-                    personagem.atributos[escolhaAtributo] = pontosAtuais + pontosAdicionar
-                    pontosRestantes -= pontosAdicionar
-                } else {
-                    println("Não é possível adicionar mais pontos a este atributo. O máximo é 15 pontos por atributo.")
-                }
-            } else {
-                println("Número inválido de pontos.")
-            }
-        } else {
-            println("Escolha de atributo inválida.")
-        }
+    // Permitir que o usuário insira os valores dos atributos manualmente
+    println("Você pode inserir os valores para os atributos. Os valores devem estar entre 8 e 15 para cada atributo.")
+    for (atributo in personagem.atributos.keys) {
+        var valorAtributo: Int
+        do {
+            valorAtributo = InputUtils.promptUserForInt("Digite o valor para $atributo (8 a 15):")
+        } while (valorAtributo < 8 || valorAtributo > 15)
+
+        personagem.atributos[atributo] = valorAtributo
     }
+
+    // Aplicando modificadores após a definição manual dos atributos
+    personagem.aplicarBonus()
 
     // Capturando a descrição e exibindo detalhes
     val descricao = InputUtils.promptUser("Digite uma descrição para o seu personagem")
@@ -90,9 +60,9 @@ fun main() {
 
     println("\nCriação de Personagem Completa! Aqui estão os detalhes do seu personagem:")
     println("Nome: ${personagem.nome}")
-    println("Raça: ${personagem.raca.nome}")
-    subRaca?.let { println("Sub-Raça: ${it.nome}") }
-    println("Classe: ${personagem.classePersonagem.nome}")
+    println("Raça: ${personagem.raca.getRaceName()}")
+    subRaca?.let { println("Sub-Raça: ${it.getSubRaceName()}") }
+    println("Classe: ${personagem.classePersonagem.getClassName()}")
     println("Atributos: ${personagem.atributos}")
     println("Descrição: $descricao")
     println("${personagem.nome} está atualmente no nível 1.")
